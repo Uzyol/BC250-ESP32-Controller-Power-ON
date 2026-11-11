@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BC-250 Power Controller - Setup</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* Enhanced styles for setup page */
+    .setup-container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+    
+    .settings-section {
+      background: #14141f;
+      border: 2px solid #2a2a3a;
+      padding: 30px;
+      border-radius: 8px;
+      margin-bottom: 40px;
+      box-shadow: 0 0 30px rgba(0, 217, 255, 0.15);
+    }
+    
+    .lock-hid-message {
+      margin-top: 10px;
+      padding: 12px;
+      background: #0a0a0f;
+      border-left: 4px solid #00d9ff;
+      font-family: 'Share Tech Mono', monospace;
+      color: #00d9ff;
+      font-size: 0.95rem;
+    }
+
+    .lock-hid-message strong {
+      color: #fff;
+      display: block;
+      margin-bottom: 5px;
+    }
+    
+    .info-text {
+      color: #8899aa;
+      font-size: 0.9rem;
+      margin-top: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .status-message {
+      margin: 10px 0;
+      padding: 10px;
+      background: #0a0a0f;
+      border-left: 4px solid #8899aa;
+      font-family: 'Share Tech Mono', monospace;
+    }
+
+    .btn-green {
+      background: #00aa00;
+      border-color: #00ff00;
+    }
+
+    .btn-red {
+      background: #5a2a2a;
+      border-color: #aa0000;
+    }
+
+    .btn-green:hover, .btn-red:hover {
+      filter: brightness(1.2);
+    }
+    
+    .mac-display {
+      background: #0a0a0f;
+      border: 2px solid #2a2a3a;
+      padding: 20px;
+      border-radius: 4px;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 1.2rem;
+      text-align: center;
+      letter-spacing: 2px;
+      color: #00d9ff;
+      margin: 15px 0;
+    }
+    
+    .badge {
+      display: inline-block;
+      padding: 5px 10px;
+      background: #1a1a2a;
+      border-left: 2px solid #00d9ff;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.8rem;
+      margin-right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <a href="/" class="logo" aria-label="Steam Machine logo">
+      <img src="steam-machines.svg" alt="Steam Machines" width="180" height="50">
+    </a>
+    <nav class="navbar" role="navigation" aria-label="Main navigation">
+      <a href="/">HOME</a>
+      <a href="/setup">SETUP</a>
+      <a href="/update">UPDATE</a>
+    </nav>
+  </header>
+  
+  <main class="home">
+    <div class="home-content setup-container">
+      <h1>🌐 WIFI SETTINGS</h1>
+      
+      <div class="settings-section">
+        <div id="wifiStatus" style="margin-bottom:20px;">LOADING STATUS...</div>
+        
+        <button onclick="scanWiFi()" class="btn" style="width:100%; margin:10px 0;">📡 SCAN NETWORKS</button>
+        
+        <div id="networkList" style="margin:20px 0;"></div>
+        
+        <label style="display:block; margin:20px 0;">
+          <strong style="font-family:'Share Tech Mono';">SSID (NETWORK NAME):</strong>
+          <input type="text" id="wifiSsid" placeholder="Enter WiFi network name" value="" style="width:100%; padding:15px; margin-top:8px; background:#0a0a0f; border:2px solid #2a2a3a; color:#fff; border-radius:4px; font-family:'Share Tech Mono';">
+          <div class="info-text">Click on a network above to fill this automatically</div>
+        </label>
+        
+        <label style="display:block; margin:20px 0;">
+          <strong style="font-family:'Share Tech Mono';">PASSWORD:</strong>
+          <input type="password" id="wifiPassword" placeholder="Enter WiFi password" style="width:100%; padding:15px; margin-top:8px; background:#0a0a0f; border:2px solid #2a2a3a; color:#fff; border-radius:4px; font-family:'Share Tech Mono';">
+        </label>
+        
+        <button onclick="saveWiFi()" class="btn" style="width:100%;">💾 SAVE & REBOOT</button>
+        <div id="wifiSaveStatus" style="margin-top:15px;"></div>
+      </div>
+      
+      <h1>📡 BLUETOOTH CONFIG</h1>
+      <div class="settings-section">
+        <div class="lock-hid-message" style="margin-bottom:18px;">
+          <strong>BC-250 BLUETOOTH ADAPTER MAC</strong>
+          <div style="margin-top:5px; color:#8899aa; font-size:0.85rem;">
+            Enter the Bluetooth adapter MAC reported by <code>bluetoothctl list</code> on the BC-250.<br>
+            This is the BC-250 adapter address, NOT a controller address. Leave empty to disable spoofing.
+          </div>
+        </div>
+        <label for="btSpoofMac" style="font-family:'Share Tech Mono';">BLUETOOTH SPOOF ADDRESS:</label>
+        <input type="text" id="btSpoofMac" maxlength="17" placeholder="AA:BB:CC:DD:EE:FF"
+               style="width:100%; padding:15px; margin-top:8px; text-transform:uppercase; background:#0a0a0f; border:2px solid #2a2a3a; color:#fff; border-radius:4px; font-family:'Share Tech Mono';">
+        <div id="btSpoofState" style="margin:12px 0; color:#8899aa;"></div>
+        <button onclick="saveBluetoothConfig()" class="btn" style="width:100%;">💾 SAVE BLUETOOTH MAC</button>
+        <div id="btSaveStatus" style="margin-top:15px;"></div>
+      </div>
+
+      <h1>🎮 CONTROLLER SETUP</h1>
+
+      <div class="settings-section">
+        <label style="display:flex; align-items:center; margin:20px 0; cursor:pointer;">
+          <input type="checkbox" id="ps5Enabled" style="width:20px; height:20px; margin-right:12px; accent-color:#00d9ff;">
+          <strong style="font-family:'Share Tech Mono';">ENABLE CONTROLLER WAKE</strong>
+        </label>
+
+        <div id="controllerStatus" class="status-message">LOADING...</div>
+        <div id="controllerList" style="margin:20px 0;"></div>
+
+        <div style="margin:20px 0;">
+          <label for="manualControllerMac"><strong>ADD CONTROLLER MAC MANUALLY (RECOMMENDED)</strong></label>
+          <div style="display:flex; gap:10px; margin-top:10px; flex-wrap:wrap;">
+            <input id="manualControllerMac" type="text" maxlength="17" placeholder="AA:BB:CC:DD:EE:FF" style="flex:1 1 240px; text-transform:uppercase;">
+            <button onclick="addControllerManual()" class="btn btn-green" style="flex:1 1 220px;">
+              <i class='bx bx-plus'></i> ADD MAC WITHOUT PAIRING
+            </button>
+          </div>
+          <div id="manualControllerStatus" style="margin-top:8px; color:#8899aa; font-size:0.85rem;">Keep the controller paired with SteamOS. Enter only its Bluetooth MAC here.</div>
+        </div>
+
+        <div style="display:flex; gap:10px; margin:20px 0; flex-wrap:wrap;">
+          <button onclick="addNextController()" class="btn" style="flex:1 1 220px;" id="addControllerBtn">
+            <i class='bx bx-link'></i> LEGACY PAIR / ADD
+          </button>
+          <button onclick="clearControllers()" class="btn btn-red" style="flex:1 1 220px;">
+            <i class='bx bx-trash'></i> REMOVE ALL
+          </button>
+        </div>
+
+        <div class="lock-hid-message">
+          <strong>AUTHORIZED CONTROLLERS</strong>
+          <div style="margin-top:5px; color:#8899aa; font-size:0.85rem;">
+            • Up to 5 controller MAC addresses can be stored.<br>
+            • Build #6: pair controllers with SteamOS, then add their Bluetooth MAC here manually.<br>
+            • Manual MAC entry does NOT change the controller's SteamOS pairing.<br>
+            • LEGACY PAIR / ADD is kept only for compatibility and can move pairing away from SteamOS.<br>
+            • Up to 5 authorized controller MAC addresses can be stored.
+          </div>
+        </div>
+
+        <button onclick="saveControllerSettings()" class="btn" style="width:100%; margin-top:30px;">💾 SAVE CONTROLLER SETTINGS</button>
+        <div id="ps5Status" style="margin-top:15px;"></div>
+      </div>
+    </div>
+  </main>
+  
+  <footer class="footer">
+    <p>© 2026 BC-250 POWER CONTROLLER</p>
+  </footer>
+  
+  <script>
+
+    async function loadWiFiStatus() {
+      try {
+        const res = await fetch('/api/wifi/config');
+        const data = await res.json();
+        
+        let status = '📶 ';
+        if (data.apMode) {
+          status += 'ACCESS POINT MODE - CONFIGURE WIFI BELOW';
+        } else if (data.configured) {
+          status += 'CONNECTED TO: ' + data.ssid;
+        } else {
+          status += 'NOT CONFIGURED - ENTER WIFI DETAILS BELOW';
+        }
+        document.getElementById('wifiStatus').innerText = status;
+        document.getElementById('wifiSsid').value = data.ssid || '';
+      } catch (e) {
+        document.getElementById('wifiStatus').innerText = '❌ ERROR LOADING STATUS';
+        console.error(e);
+      }
+    }
+    
+    async function scanWiFi() {
+      document.getElementById('networkList').innerHTML = '🔄 SCANNING...';
+      
+      try {
+        await fetch('/api/wifi/scan');
+        
+        setTimeout(async () => {
+          try {
+            const res = await fetch('/api/wifi/scan');
+            const networks = await res.json();
+            
+            if (networks.scanning) {
+              document.getElementById('networkList').innerHTML = '⏳ STILL SCANNING...';
+              return;
+            }
+            
+            if (networks.length === 0) {
+              document.getElementById('networkList').innerHTML = '📭 NO NETWORKS FOUND';
+              return;
+            }
+            
+            let html = '<h3 style="margin-bottom:15px; font-family: Share Tech Mono; color: #00d9ff;">AVAILABLE NETWORKS:</h3><ul style="list-style:none; padding:0;">';
+            networks.forEach(net => {
+              const encrypted = net.encryption ? '🔒' : '🔓';
+              html += `<li onclick="document.getElementById('wifiSsid').value='${net.ssid.replace(/'/g, "\\'")}'" style="padding:12px; border-bottom:1px solid #2a2a3a; cursor:pointer; font-family:Share Tech Mono; transition:all 0.3s;" onmouseover="this.style.background='#1a1a2a'" onmouseout="this.style.background='transparent'">
+                         ${encrypted} <strong>${net.ssid}</strong> 
+                         <span style="color:#8899aa; float:right;">${net.rssi} dBm</span>
+                       </li>`;
+            });
+            html += '</ul>';
+            document.getElementById('networkList').innerHTML = html;
+          } catch (e) {
+            document.getElementById('networkList').innerHTML = '❌ SCAN FAILED';
+            console.error(e);
+          }
+        }, 2000);
+      } catch (e) {
+        document.getElementById('networkList').innerHTML = '❌ SCAN FAILED';
+        console.error(e);
+      }
+    }
+    
+    async function saveWiFi() {
+      const ssid = document.getElementById('wifiSsid').value.trim();
+      const password = document.getElementById('wifiPassword').value;
+      
+      if (!ssid) {
+        document.getElementById('wifiSaveStatus').innerText = '❌ SSID IS REQUIRED!';
+        return;
+      }
+      
+      document.getElementById('wifiSaveStatus').innerText = '💾 SAVING AND REBOOTING...';
+      
+      try {
+        const res = await fetch('/api/wifi/config', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ssid: ssid, password: password})
+        });
+        
+        const responseText = await res.text();
+        
+        if (res.ok) {
+          document.getElementById('wifiSaveStatus').innerHTML = '✅ SAVED! REBOOTING IN 3 SECONDS...<br>CONNECT TO YOUR WIFI NETWORK AFTER REBOOT.';
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 3000);
+        } else {
+          document.getElementById('wifiSaveStatus').innerText = '❌ ERROR SAVING: ' + responseText;
+        }
+      } catch (e) {
+        document.getElementById('wifiSaveStatus').innerText = '❌ CONNECTION ERROR: ' + e.message;
+        console.error(e);
+      }
+    }
+    
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    }
+
+    function validBluetoothMac(mac) {
+      return /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/.test(mac);
+    }
+
+    async function loadBluetoothConfig() {
+      try {
+        const res = await fetch('/api/bluetooth/config');
+        const data = await res.json();
+        document.getElementById('btSpoofMac').value = (data.spoofMac || '').toUpperCase();
+        const state = document.getElementById('btSpoofState');
+        if (!data.enabled) state.innerText = 'Spoofing is disabled. ESP32 uses its factory Bluetooth MAC.';
+        else if (data.active) state.innerText = 'Active now: ' + data.spoofMac + ' (BC-250 adapter identity)';
+        else state.innerText = 'Saved: ' + data.spoofMac + ' — restart ESP32 while BC-250 is off to apply it.';
+      } catch (e) {
+        document.getElementById('btSpoofState').innerText = 'ERROR LOADING BLUETOOTH CONFIG';
+      }
+    }
+
+    async function saveBluetoothConfig() {
+      const input = document.getElementById('btSpoofMac');
+      const status = document.getElementById('btSaveStatus');
+      const mac = input.value.trim().toUpperCase().replace(/-/g, ':');
+      input.value = mac;
+      if (mac && !validBluetoothMac(mac)) {
+        status.innerText = '❌ INVALID MAC. USE AA:BB:CC:DD:EE:FF';
+        return;
+      }
+      status.innerText = '💾 SAVING...';
+      try {
+        const res = await fetch('/api/bluetooth/config', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({spoofMac:mac})
+        });
+        const txt = await res.text();
+        if (res.ok) {
+          status.innerHTML = '✅ SAVED. RESTART ESP32 WHILE THE BC-250 IS OFF TO APPLY THE ADDRESS.';
+          await loadBluetoothConfig();
+        } else status.innerText = '❌ ' + txt;
+      } catch (e) {
+        status.innerText = '❌ CONNECTION ERROR: ' + e.message;
+      }
+    }
+
+    async function loadPS5() {
+      try {
+        const res = await fetch('/api/ps5/config');
+        const data = await res.json();
+        document.getElementById('ps5Enabled').checked = data.enabled || false;
+
+        const list = document.getElementById('controllerList');
+        const macs = data.macAddresses || [];
+        const max = data.maxControllers || 5;
+        let html = '';
+
+        for (let i = 0; i < max; i++) {
+          const mac = macs[i] || '';
+          html += '<div style="display:flex;align-items:center;gap:10px;padding:12px;border-bottom:1px solid #2a2a3a;font-family:Share Tech Mono;">';
+          html += '<span style="min-width:70px;color:#8899aa;">SLOT ' + (i + 1) + '</span>';
+          if (mac) {
+            html += '<span style="flex:1;color:#00d9ff;">' + escapeHtml(mac) + '</span>';
+            html += '<button class="btn btn-red" style="padding:8px 12px;" onclick="removeController(\'' + escapeHtml(mac) + '\')">REMOVE</button>';
+          } else {
+            html += '<span style="flex:1;color:#667788;">EMPTY</span>';
+          }
+          html += '</div>';
+        }
+        list.innerHTML = html;
+
+        const status = document.getElementById('controllerStatus');
+        if (data.addMode) {
+          status.innerHTML = '📡 ADD MODE ACTIVE — connect the new controller now';
+          status.style.borderLeftColor = '#00d9ff';
+        } else if (macs.length === 0) {
+          status.innerHTML = '⚠️ LIST EMPTY — first detected controller will be saved automatically';
+          status.style.borderLeftColor = '#aa5500';
+        } else {
+          status.innerHTML = '✅ ' + macs.length + ' / ' + max + ' AUTHORIZED CONTROLLER(S)';
+          status.style.borderLeftColor = '#00aa00';
+        }
+        document.getElementById('addControllerBtn').disabled = macs.length >= max;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function addControllerManual() {
+      const input = document.getElementById('manualControllerMac');
+      const status = document.getElementById('manualControllerStatus');
+      const mac = (input.value || '').trim().toUpperCase();
+      if (!/^([0-9A-F]{2}:){5}[0-9A-F]{2}$/.test(mac)) {
+        status.innerHTML = '❌ INVALID MAC — use AA:BB:CC:DD:EE:FF';
+        return;
+      }
+      status.innerHTML = '💾 SAVING...';
+      try {
+        const res = await fetch('/api/controllers/add-manual', {
+          method:'POST', headers:{'Content-Type':'application/json'},
+          body:JSON.stringify({macAddress:mac})
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          status.innerHTML = '❌ ' + escapeHtml(data.message || 'FAILED TO ADD MAC');
+          return;
+        }
+        input.value = '';
+        status.innerHTML = '✅ CONTROLLER MAC SAVED — keep it paired with SteamOS';
+        await loadPS5();
+      } catch (e) {
+        status.innerHTML = '❌ CONNECTION ERROR: ' + escapeHtml(e.message);
+      }
+    }
+
+    async function addNextController() {
+      const status = document.getElementById('controllerStatus');
+      const button = document.getElementById('addControllerBtn');
+      button.disabled = true;
+      status.innerHTML = '⏳ ENABLING PAIR / ADD MODE...';
+      status.style.borderLeftColor = '#8899aa';
+
+      try {
+        const res = await fetch('/api/controllers/add-next', {method:'POST'});
+        const data = await res.json();
+        if (!res.ok) {
+          status.innerHTML = '❌ ' + (data.message || 'FAILED TO START ADD MODE');
+          status.style.borderLeftColor = '#aa0000';
+          button.disabled = false;
+          return;
+        }
+
+        status.innerHTML = '📡 WAITING FOR NEW CONTROLLER...<br><span style="color:#8899aa;font-size:0.85rem;">Now turn on or reconnect the controller you want to add.</span>';
+        status.style.borderLeftColor = '#00d9ff';
+        button.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> WAITING FOR CONTROLLER...";
+      } catch (e) {
+        status.innerHTML = '❌ CONNECTION ERROR: ' + escapeHtml(e.message);
+        status.style.borderLeftColor = '#aa0000';
+        button.disabled = false;
+      }
+    }
+
+    async function removeController(mac) {
+      if (!confirm('Remove ' + mac + ' from authorized controllers?')) return;
+      const res = await fetch('/api/controllers/remove', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({macAddress:mac})
+      });
+      if (!res.ok) alert('Failed to remove controller');
+      await loadPS5();
+    }
+
+    async function clearControllers() {
+      if (!confirm('Remove ALL authorized controller MAC addresses?')) return;
+      await fetch('/api/controllers/clear', {method:'POST'});
+      await loadPS5();
+    }
+
+    async function saveControllerSettings() {
+      const status = document.getElementById('ps5Status');
+      status.innerText = '💾 SAVING...';
+      const res = await fetch('/api/ps5/config', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({enabled:document.getElementById('ps5Enabled').checked, autoConnect:false})
+      });
+      status.innerHTML = res.ok ? '✅ SAVED!' : '❌ SAVE FAILED';
+      await loadPS5();
+    }
+
+    let previousAddMode = false;
+    let previousControllerCount = -1;
+
+    async function updateControllerStatus() {
+      try {
+        const [statusRes, configRes] = await Promise.all([
+          fetch('/api/ps5/status'),
+          fetch('/api/ps5/config')
+        ]);
+        const data = await statusRes.json();
+        const config = await configRes.json();
+        const macs = config.macAddresses || [];
+        const max = config.maxControllers || 5;
+        const status = document.getElementById('controllerStatus');
+        const button = document.getElementById('addControllerBtn');
+
+        // If a controller was just enrolled, refresh the slot list immediately.
+        if (previousControllerCount >= 0 && macs.length !== previousControllerCount) {
+          await loadPS5();
+          if (macs.length > previousControllerCount) {
+            const addedMac = macs[macs.length - 1] || '';
+            status.innerHTML = '✅ CONTROLLER ADDED — ' + escapeHtml(addedMac) + '<br><span style="color:#8899aa;font-size:0.85rem;">Saved to SLOT ' + macs.length + '</span>';
+            status.style.borderLeftColor = '#00aa00';
+          }
+        }
+        previousControllerCount = macs.length;
+
+        if (data.addMode) {
+          previousAddMode = true;
+          status.innerHTML = '📡 WAITING FOR NEW CONTROLLER...<br><span style="color:#8899aa;font-size:0.85rem;">Turn on or reconnect the controller you want to add.</span>';
+          status.style.borderLeftColor = '#00d9ff';
+          button.disabled = true;
+          button.innerHTML = "<i class='bx bx-loader-alt bx-spin'></i> WAITING FOR CONTROLLER...";
+          return;
+        }
+
+        if (previousAddMode) {
+          previousAddMode = false;
+          await loadPS5();
+        }
+
+        button.disabled = macs.length >= max;
+        button.innerHTML = "<i class='bx bx-plus'></i> PAIR / ADD NEW CONTROLLER";
+
+        if (data.connectedMac) {
+          const detected = String(data.connectedMac).toUpperCase();
+          const authorized = macs.some(mac => String(mac).toUpperCase() === detected);
+          if (authorized) {
+            status.innerHTML = '✅ AUTHORIZED CONTROLLER DETECTED — ' + escapeHtml(data.connectedMac);
+            status.style.borderLeftColor = '#00aa00';
+          } else {
+            status.innerHTML = '⚠️ NEW CONTROLLER DETECTED — ' + escapeHtml(data.connectedMac) + '<br><span style="color:#ffaa00;font-size:0.85rem;">Not saved. Press PAIR / ADD NEW CONTROLLER, then reconnect it.</span>';
+            status.style.borderLeftColor = '#aa5500';
+          }
+        } else if (macs.length === 0) {
+          status.innerHTML = '⚠️ LIST EMPTY — first detected controller will be saved automatically';
+          status.style.borderLeftColor = '#aa5500';
+        } else {
+          status.innerHTML = '✅ ' + macs.length + ' / ' + max + ' AUTHORIZED CONTROLLER(S) — READY';
+          status.style.borderLeftColor = '#00aa00';
+        }
+      } catch (e) { console.error(e); }
+    }
+
+    window.onload = function() {
+      loadWiFiStatus();
+      loadBluetoothConfig();
+      loadPS5();
+      setInterval(updateControllerStatus, 2000);
+    };
+  </script>
+</body>
+</html>
